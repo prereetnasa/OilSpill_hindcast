@@ -1,0 +1,12 @@
+﻿.venv/
+__pycache__/
+*.pyc
+
+# Large ocean data files
+*.nc
+
+# OpenDrift/cache files
+.pytest_cache/
+
+# Keep GeoJSON outputs, ignore other generated files
+outputs/*.nc

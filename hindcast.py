@@ -177,18 +177,18 @@ def run_hindcast(request):
     centroid = request["centroid"]
     detection_time = request["detection_time"]
 
-    # Look back 24 hours
-    hours_back = 24
+    # Look back requested number of hours, default 24
+    hours_back = request.get("hours_back", 24)
 
     # Try OpenDrift first
     try:
         print("Running OpenDrift hindcast...")
 
         coordinates = create_opendrift_trajectory(
-    centroid,
-    detection_time,
-    hours_back=hours_back
-)
+            centroid,
+            detection_time,
+            hours_back=hours_back
+        )
 
         print("OpenDrift hindcast completed!")
 
@@ -226,7 +226,6 @@ def run_hindcast(request):
         "trajectory": trajectory_geojson,
         "source_corridor": source_corridor
     }
-
 # ============================================================
 # 4. TEST INPUT
 # ============================================================

@@ -69,3 +69,19 @@ def test_person_b_handoff():
 
     assert result["trajectory"]["geometry"]["type"] == "LineString"
     assert result["source_corridor"]["geometry"]["type"] == "Polygon"
+
+def test_wind_data_available():
+    import xarray as xr
+
+    ds = xr.open_dataset("outputs/indian_ocean_wind_24h.nc")
+
+    assert "x_wind" in ds.data_vars
+    assert "y_wind" in ds.data_vars
+
+    assert len(ds.time) > 0
+    assert len(ds.latitude) > 0
+    assert len(ds.longitude) > 0
+
+    ds.close()
+
+    print("Wind data test passed!")

@@ -109,35 +109,44 @@ def create_source_corridor(coordinates, buffer_km=5):
 def create_opendrift_trajectory(centroid, detection_time, hours_back=24):
     """
     Run an OpenDrift backward simulation using
-    real ocean-current data.
+    ocean-current and wind data.
     """
 
     lon, lat = centroid
 
     o = OceanDrift(loglevel=0)
 
-    # Real Indian Ocean current data
-    reader = reader_netCDF_CF_generic.Reader(
+    # Ocean current data
+    current_reader = reader_netCDF_CF_generic.Reader(
         "outputs/indian_ocean_currents_24h.nc"
     )
 
-    o.add_reader(reader)
+    # 10 m wind data
+    wind_reader = reader_netCDF_CF_generic.Reader(
+        "outputs/indian_ocean_wind_24h.nc"
+    )
+
+    # Combine ocean current + wind readers
+    o.add_reader([current_reader, wind_reader])
 
     # Convert detection time to datetime
     seed_time = datetime.fromisoformat(
         detection_time.replace("Z", "+00:00")
     ).replace(tzinfo=None)
 
-    print("Reader start time:", reader.start_time)
-    print("Reader end time:", reader.end_time)
+    print("Current reader start:", current_reader.start_time)
+    print("Current reader end:", current_reader.end_time)
+    print("Wind reader start:", wind_reader.start_time)
+    print("Wind reader end:", wind_reader.end_time)
     print("Seeding particle at:", seed_time)
 
-    # Seed at detected spill location
+    # Seed oil particle at detected spill location
     o.seed_elements(
         lon=lon,
         lat=lat,
         number=1,
-        time=seed_time
+        time=seed_time,
+        wind_drift_factor=0.02
     )
 
     # Run backward
@@ -155,7 +164,10 @@ def create_opendrift_trajectory(centroid, detection_time, hours_back=24):
 
     for x, y in zip(lons, lats):
         if x == x and y == y:
-            coordinates.append([float(x), float(y)])
+            coordinates.append([
+                float(x),
+                float(y)
+            ])
 
     return coordinates
 # ============================================================

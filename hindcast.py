@@ -6,7 +6,8 @@ from pyproj import Transformer
 from datetime import datetime, timedelta
 
 from opendrift.models.oceandrift import OceanDrift
-from opendrift.readers import reader_netCDF_CF_generic
+from opendrift.readers import reader_netCDF_CF_generic 
+from environment import get_environment_files
 
 # ============================================================
 # 1. CREATE DEMO BACKWARD TRAJECTORY
@@ -116,19 +117,24 @@ def create_opendrift_trajectory(centroid, detection_time, hours_back=24):
 
     o = OceanDrift(loglevel=0)
 
-    # Ocean current data
-    current_reader = reader_netCDF_CF_generic.Reader(
-        "outputs/indian_ocean_currents_24h.nc"
+        # Get environmental data files
+    environment_files = get_environment_files(
+        centroid,
+        detection_time
     )
 
-    # 10 m wind data
+    # Ocean current reader
+    current_reader = reader_netCDF_CF_generic.Reader(
+        environment_files["current"]
+    )
+
+    # Wind reader
     wind_reader = reader_netCDF_CF_generic.Reader(
-        "outputs/indian_ocean_wind_24h.nc"
+        environment_files["wind"]
     )
 
     # Combine ocean current + wind readers
     o.add_reader([current_reader, wind_reader])
-
     # Convert detection time to datetime
     seed_time = datetime.fromisoformat(
         detection_time.replace("Z", "+00:00")
@@ -245,11 +251,14 @@ def run_hindcast(request):
 if __name__ == "__main__":
 
     test_request = {
-        "incident_id": "INC001",
-        "centroid": [74.81, 12.51],
-        "detection_time": "2026-08-30T12:00:00Z",
-        "spill_geojson": {}
-    }
+    "incident_id": "INC001",
+    "centroid": [
+        54.48877510459397,
+        25.322134857980192
+    ],
+    "detection_time": "2026-09-01T20:45:15.466871Z",
+    "spill_geojson": {}
+}
 
     result = run_hindcast(test_request)
 
